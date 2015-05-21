@@ -1,0 +1,3 @@
+# for quick prototyping ...
+echo "Running: $1"
+budo $1:bundle.js --live --verbose -- -t babelify -t [ installify --save-dev ] | garnish

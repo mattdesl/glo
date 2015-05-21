@@ -11,27 +11,17 @@
     "url": "https://github.com/mattdesl"
   },
   "dependencies": {
-    "2d-context": "^1.2.0",
-    "camera-project": "^1.0.1",
-    "canvas-fit-loop": "^1.0.2",
-    "defined": "^1.0.0",
-    "draw-triangles-2d": "^1.0.0",
-    "gl-mat4": "^1.1.3",
-    "gl-quat": "^1.0.0",
-    "gl-vec3": "^1.0.3",
-    "gl-vec4": "^1.0.1",
-    "object-assign": "^2.0.0"
   },
   "devDependencies": {
     "babelify": "^6.1.0",
     "budo": "^4.0.0",
     "garnish": "^2.1.3",
+    "glslify": "^2.1.2",
     "installify": "^1.0.1"
   },
   "scripts": {
     "test": "node test.js",
-    "start-2d": "budo demo-2d.js:bundle.js --live --verbose -- -t babelify -t [ installify --save ] | garnish",
-    "start": "budo demo.js:bundle.js --live --verbose -- -t babelify -t [ installify --save ] | garnish"
+    "start": "tools/demo.sh examples/basic.js"
   },
   "keywords": [],
   "repository": {
