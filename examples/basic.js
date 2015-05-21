@@ -8,5 +8,5 @@ const app = require('canvas-loop')(canvas, {
 app.on('tick', render).start()
 
 function render(dt) {
-
+  
 }

@@ -11,17 +11,23 @@
     "url": "https://github.com/mattdesl"
   },
   "dependencies": {
+    "gl-shader-errors": "^1.0.3",
+    "gl-shader-extract": "^1.0.2",
+    "pad-left": "^1.0.2"
   },
   "devDependencies": {
     "babelify": "^6.1.0",
     "budo": "^4.0.0",
+    "errorify": "^0.2.4",
     "garnish": "^2.1.3",
     "glslify": "^2.1.2",
-    "installify": "^1.0.1"
+    "installify": "^1.0.1",
+    "tape": "^4.0.0"
   },
   "scripts": {
     "test": "node test.js",
-    "start": "tools/demo.sh examples/basic.js"
+    "dev": "./tools/run.sh",
+    "start": "./tools/run.sh examples/basic.js"
   },
   "keywords": [],
   "repository": {
