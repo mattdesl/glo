@@ -13,6 +13,7 @@
   "dependencies": {
     "gl-shader-errors": "^1.0.3",
     "gl-shader-extract": "^1.0.2",
+    "object-assign": "^2.0.0",
     "pad-left": "^1.0.2"
   },
   "devDependencies": {

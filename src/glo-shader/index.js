@@ -1,6 +1,7 @@
 var compileShader = require('./compile-shader')
 var linkShaders = require('./link-program')
 var extract = require('gl-shader-extract')
+var reflect = require('./reflect')
 
 module.exports = createShader
 function createShader (gl, opt) {
@@ -15,7 +16,7 @@ function createShader (gl, opt) {
     reload: reload
   }
 
-  // create initial program
+  // compile the program
   reload(opt.vertex, opt.fragment)
 
   // probably could use a wrapper to clean these up
@@ -81,6 +82,23 @@ function createShader (gl, opt) {
 
     // extract uniforms and attributes
     types = extract(gl, program)
-    // TODO: wire up uniform locations and such
+
+    // determine new locations
+    var locations = types.uniforms.map(function(uniform) {
+      return {
+        index: uniform,
+        location: gl.getUniformLocation(program, uniform.name)
+      }
+    })
+
+    console.log(locations)
+
+    // un-nest all structs and arrays
+    // var structure = {
+    //   uniforms: reflect(types.uniforms),
+    //   attributes: reflect(types.attributes)
+    // }
+
+    
   }
 }
