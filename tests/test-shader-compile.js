@@ -1,6 +1,6 @@
 var test = require('tape')
 
-var createShader = require('../src/glo-shader')
+var createShader = require('../src/shader')
 var createContext = require('webgl-context')
 
 var glslify = require('glslify')
@@ -36,7 +36,7 @@ test('shader should support reloading', function (t) {
 
   t.deepEqual(result.types, expected, 'provides types')
 
-  var expected2 = { attributes: [ { name: 'position', type: 'vec4' }, { name: 'someAttrib', type: 'float' } ], uniforms: [ { name: 'view', type: 'mat4' }, { name: 'projection', type: 'mat4' }, { name: 'model', type: 'mat4' } ] }
+  var expected2 = { attributes: [ { name: 'position', type: 'vec4' }, { name: 'someAttrib', type: 'float' } ], uniforms: [ { name: 'model', type: 'mat4' }, { name: 'projection', type: 'mat4' }, { name: 'view', type: 'mat4' } ] }
   result.reload(vert2, frag2)
   t.deepEqual(result.types, expected2, 'reloads shader and gets new types')
   result.dispose()

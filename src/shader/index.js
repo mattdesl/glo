@@ -5,10 +5,11 @@ var reflect = require('glsl-extract-reflect')
 
 module.exports = createShader
 function createShader (gl, opt) {
-  var attributes = opt.attributes || []
+  var attributeBindings = opt.attributes
   var quiet = opt.quiet
   var program = gl.createProgram()
-  var vertexShader, fragmentShader, types, uniforms
+  var vertexShader, fragmentShader
+  var types, uniforms, attributes
 
   var shader = {
     dispose: disposeProgram,
@@ -19,7 +20,7 @@ function createShader (gl, opt) {
   // compile the program
   reload(opt.vertex, opt.fragment)
 
-  // probably could use a wrapper to clean these up
+  // public read-only vars
   Object.defineProperties(shader, {
     handle: getter(function () {
       return program
@@ -35,6 +36,9 @@ function createShader (gl, opt) {
     }),
     uniforms: getter(function () {
       return uniforms
+    }),
+    attributes: getter(function () {
+      return attributes
     })
   })
 
@@ -70,14 +74,28 @@ function createShader (gl, opt) {
 
     // re-link
     var shaders = [ vertexShader, fragmentShader ]
-    linkShaders(gl, program, shaders, attributes, quiet)
+    linkShaders(gl, program, shaders, attributeBindings, quiet)
 
     // extract uniforms and attributes
     types = extract(gl, program)
 
+    // normalize sort order by name across Chrome / FF
+    types.uniforms.sort(compareString)
+    types.attributes.sort(compareString)
+
     // provide optimized getters/setters
     uniforms = reflect(types.uniforms, function (uniform, index) {
       return makeUniformProp(uniform, index)
+    })
+
+    // provide attribute locations and pointer() function
+    attributes = reflect(types.attributes, function (attrib, index) {
+      var location = gl.getAttribLocation(program, attrib.path)
+      return Object.defineProperty({
+        type: attrib.type
+      }, 'location', getter(function () {
+        return location
+      }))
     })
   }
 
@@ -100,6 +118,10 @@ function createShader (gl, opt) {
     ].join('\n'))
     return generated(shader, gl, program, location)
   }
+}
+
+function compareString (a, b) {
+  return a.name.localeCompare(b.name)
 }
 
 function getter (fn) {
