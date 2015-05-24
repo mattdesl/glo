@@ -2,10 +2,7 @@
 
 [![experimental](http://badges.github.io/stability-badges/dist/experimental.svg)](http://github.com/badges/stability-badges)
 
-
-this is just experiments, nothing yet.
-
-
+this may or may not become a 3D G-Buffer rendering pipeline
 
 ## Usage
 

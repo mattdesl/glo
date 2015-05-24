@@ -5,8 +5,6 @@ var reflect = require('glsl-extract-reflect')
 
 module.exports = createShader
 function createShader (gl, opt) {
-  var attributeBindings = opt.attributes
-  var quiet = opt.quiet
   var program = gl.createProgram()
   var vertexShader, fragmentShader
   var types, uniforms, attributes
@@ -14,11 +12,11 @@ function createShader (gl, opt) {
   var shader = {
     dispose: disposeProgram,
     bind: bind,
-    reload: reload
+    update: update
   }
 
   // compile the program
-  reload(opt.vertex, opt.fragment)
+  update(opt)
 
   // public read-only vars
   Object.defineProperties(shader, {
@@ -65,12 +63,16 @@ function createShader (gl, opt) {
   }
 
   // reload shader with new source code
-  function reload (vertSrc, fragSrc) {
+  function update (opt) {
+    // remove old shaders
     disposeShaders()
 
+    var quiet = opt.quiet
+    var attributeBindings = opt.attributes
+
     // re-compile source
-    vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertSrc, quiet)
-    fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragSrc, quiet)
+    vertexShader = compileShader(gl, gl.VERTEX_SHADER, opt.vertex, quiet)
+    fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, opt.fragment, quiet)
 
     // re-link
     var shaders = [ vertexShader, fragmentShader ]
@@ -88,15 +90,17 @@ function createShader (gl, opt) {
       return makeUniformProp(uniform, index)
     })
 
-    // provide attribute locations and pointer() function
-    attributes = reflect(types.attributes, function (attrib, index) {
-      var location = gl.getAttribLocation(program, attrib.path)
-      return Object.defineProperty({
-        type: attrib.type
-      }, 'location', getter(function () {
-        return location
-      }))
-    })
+    // provide attribute locations and type
+    // (GLSL ES does not support array/struct attributes)
+    attributes = types.attributes.reduce(function (struct, attrib) {
+      var name = attrib.name
+      struct[name] = {
+        size: dimension(attrib.type),
+        type: attrib.type,
+        location: gl.getAttribLocation(program, name)
+      }
+      return struct
+    }, {})
   }
 
   function makeUniformProp (uniform, index) {
@@ -146,7 +150,7 @@ function getPropSetter (path, location, type) {
   }
 
   var vecIdx = type.indexOf('vec')
-  var count = parseInt(type.charAt(type.length - 1), 10)
+  var count = dimension(type)
   if (vecIdx === 0 || vecIdx === 1) {
     var vtype = type.charAt('0')
     switch (vtype) {
@@ -163,4 +167,8 @@ function getPropSetter (path, location, type) {
   } else {
     throw new Error('unrecognized uniform type ' + type + ' for ' + path)
   }
+}
+
+function dimension (type) {
+  return parseInt(type.charAt(type.length - 1), 10) || 1
 }

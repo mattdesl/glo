@@ -42,9 +42,9 @@ test('shader should compile', function (t) {
   t.deepEqual(gl.getUniform(shader.handle, loc), [ 1, 0, 0.5 ], 'sets light struct array')
 
   // test default bindings, position is usually always 0
-  t.deepEqual(shader.attributes, { position: { location: 0, type: 'vec4' }, someAttrib: { location: 1, type: 'float' } }, 'attributes and locations')
+  t.deepEqual(shader.attributes, { position: { location: 0, size: 4, type: 'vec4' }, someAttrib: { location: 1, size: 1, type: 'float' } }, 'attributes and locations')
 
-  // Oddly this produces a warning in Chrome 43 although it works fine
+  // Oddly bindAttribLocation produces a warning in Chrome 43 although it works fine
   shader = createShader(gl, {
     quiet: true,
     vertex: vert,
@@ -53,7 +53,7 @@ test('shader should compile', function (t) {
       { name: 'position', location: 1 }
     ]
   })
-  t.deepEqual(shader.attributes, { position: { location: 1, type: 'vec4' }, someAttrib: { location: 0, type: 'float' } }, 'bind attrib locations')
+  t.deepEqual(shader.attributes, { position: { location: 1, size: 4, type: 'vec4' }, someAttrib: { location: 0, size: 1, type: 'float' } }, 'bind attrib locations')
 
   shader.dispose()
   t.end()

@@ -37,7 +37,7 @@ test('shader should support reloading', function (t) {
   t.deepEqual(result.types, expected, 'provides types')
 
   var expected2 = { attributes: [ { name: 'position', type: 'vec4' }, { name: 'someAttrib', type: 'float' } ], uniforms: [ { name: 'model', type: 'mat4' }, { name: 'projection', type: 'mat4' }, { name: 'view', type: 'mat4' } ] }
-  result.reload(vert2, frag2)
+  result.update({ vertex: vert2, fragment: frag2 })
   t.deepEqual(result.types, expected2, 'reloads shader and gets new types')
   result.dispose()
   t.end()
