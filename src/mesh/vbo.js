@@ -1,5 +1,12 @@
 var assign = require('object-assign')
-function noop () {}
+var noop = function () {}
+var attribs = require('./bind-attributes')
+
+module.exports = function createVBO (gl, attributes, elements, elementsType) {
+  var vbo = new VertexBufferObject(gl)
+  vbo.update(attributes, elements, elementsType)
+  return vbo
+}
 
 function VertexBufferObject (gl) {
   this.gl = gl
@@ -11,40 +18,39 @@ function VertexBufferObject (gl) {
 assign(VertexBufferObject.prototype, {
 
   dispose: noop,
-  unbind: noop,
+  invalidate: noop,
 
-  update: function (attributes, elements, elementsType) {
+  update: function update (attributes, elements, elementsType) {
     this.attributes = attributes
     this.elements = elements
     this.elementsType = elementsType || this.gl.UNSIGNED_SHORT
   },
 
   // associate this VBO with the given shader
-  bind: function (shader) {
-    
+  bind: function bind (shader) {
+    if (!shader) {
+      throw new Error('must provide shader to vbo bind()')
+    }
+
+    attribs.bind(this.gl, this.attributes, this.elements, shader.attributes)
   },
 
-  draw: function (mode, count, offset) {
+  // must be the same shader that was used in bind()
+  unbind: function unbind (shader) {
+    if (!shader) {
+      throw new Error('must provide shader to vbo unbind()')
+    }
 
+    attribs.unbind(this.gl, this.attributes, this.elements, shader.attributes)
+  },
+
+  draw: function draw (mode, count, offset) {
+    offset = offset || 0
+    var gl = this.gl
+    if (this.elements) {
+      gl.drawElements(mode, count, this.elementsType, offset)
+    } else {
+      gl.drawArrays(mode, offset, count)
+    }
   }
 })
-
-
-// VBO.prototype.update = function (attributes, elements, elementsType) {
-//   this._elements = elements
-//   this._attributes = attributes
-//   this._elementsType = elementsType || this.gl.UNSIGNED_SHORT
-// }
-
-// VBO.prototype.dispose = function () {}
-// VBO.prototype.unbind = function () {}
-
-// VBO.prototype.draw = function (mode, count, offset) {
-//   offset = offset || 0
-//   var gl = this.gl
-//   if(this._elements) {
-//     gl.drawElements(mode, count, this._elementsType, offset)
-//   } else {
-//     gl.drawArrays(mode, offset, count)
-//   }
-// }

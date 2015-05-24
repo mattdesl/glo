@@ -1,6 +1,6 @@
 var assign = require('object-assign')
 
-module.exports = function createBuffer (gl, name, data, type, usage) {
+module.exports = function createBuffer (gl, data, type, usage) {
   type = type || gl.ARRAY_BUFFER
   usage = usage || gl.STATIC_DRAW
 
@@ -11,17 +11,17 @@ module.exports = function createBuffer (gl, name, data, type, usage) {
     throw new TypeError('gl-buffer: Invalid usage for buffer, must be either gl.DYNAMIC_DRAW, gl.STATIC_DRAW or gl.STREAM_DRAW')
   }
 
-  var buffer = new Buffer(gl, name, type, usage)
+  var buffer = new Buffer(gl, type, usage)
   buffer.update(data)
   return buffer
 }
 
-function Buffer (gl, name, type, usage) {
+function Buffer (gl, type, usage) {
   this.gl = gl
-  this.name = name
   this.type = type
   this.usage = usage
   this.length = 0
+  this.byteLength = 0
   this.handle = gl.createBuffer()
 }
 
@@ -40,7 +40,8 @@ assign(Buffer.prototype, {
 
   update: function update (data) {
     this.bind()
-    this.length = data.length * data.BYTES_PER_ELEMENT
+    this.length = data.length
+    this.byteLength = this.length * data.BYTES_PER_ELEMENT
     this.gl.bufferData(this.type, data, this.usage)
   },
 
