@@ -1,10 +1,11 @@
+var VertexObject = require('./vertex-object')
 var createVBO = require('./vbo')
 var assign = require('object-assign')
-var attribs = require('./bind-attributes')
+var attribs = require('./attribute-utils')
 
 module.exports = function createVAO (gl, attributes, elements, elementsType) {
   var ext = gl.getExtension('OES_vertex_array_object')
-  if (!ext) { // emulated VAO
+  if (!ext) { // fallback, emulate VAO with VBO
     return createVBO(gl, attributes, elements, elementsType)
   }
 
@@ -15,28 +16,20 @@ module.exports = function createVAO (gl, attributes, elements, elementsType) {
 }
 
 function VertexArrayObject (gl, ext, maxAttribs) {
-  this.gl = gl
-  this.attributes = null
-  this.elements = null
-  this.elementsType = gl.UNSIGNED_SHORT
+  VertexObject.call(this, gl)
   this.handle = ext.createVertexArrayOES()
   this._maxAttribs = maxAttribs
   this._dirty = false
   this._ext = ext
-  this.vao = true
 }
+
+VertexArrayObject.prototype = Object.create(VertexObject.prototype)
+VertexArrayObject.constructor = VertexArrayObject
 
 assign(VertexArrayObject.prototype, {
 
   dispose: function dispose () {
     this._ext.deleteVertexArrayOES(this.handle)
-  },
-
-  update: function update (attributes, elements, elementsType) {
-    this.attributes = attributes
-    this.elements = elements
-    this.elementsType = elementsType || this.gl.UNSIGNED_SHORT
-    this.invalidate()
   },
 
   invalidate: function () {
@@ -56,15 +49,5 @@ assign(VertexArrayObject.prototype, {
   // must be the same shader that was used in bind()
   unbind: function unbind (shader) {
     this._ext.bindVertexArrayOES(null)
-  },
-
-  draw: function draw (mode, count, offset) {
-    offset = offset || 0
-    var gl = this.gl
-    if (this.elements) {
-      gl.drawElements(mode, count, this.elementsType, offset)
-    } else {
-      gl.drawArrays(mode, offset, count)
-    }
   }
 })

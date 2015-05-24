@@ -16,10 +16,10 @@ var model = require('gl-mat4/identity')([])
 
 var camera = createCamera()
 
-var createMesh = require('../src/mesh/attribute-mesh')
+var createMesh = require('../src/mesh')
 var mesh = createMesh(gl, { vao: true })
   .attribute('position', geom.positions)
-  .elements(geom.cells)
+  // .elements(geom.cells)
 
 createApp(canvas)
   .on('tick', render)

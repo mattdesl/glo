@@ -1,17 +1,6 @@
 module.exports.bind = bindAttribs
 module.exports.unbind = unbindAttribs
 module.exports.unbindAll = unbindAll
-module.exports.draw = draw
-
-
-function draw (gl, mode, count, offset, elements, elementsType) {
-  offset = offset || 0
-  if (elements) {
-    gl.drawElements(mode, count, elementsType, offset)
-  } else {
-    gl.drawArrays(mode, offset, count)
-  }
-}
 
 function bindAttribs (gl, attributes, elements, locations) {
   if (elements) {
