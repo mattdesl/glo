@@ -5,9 +5,9 @@ var createContext = require('webgl-context')
 
 var glslify = require('glslify')
 var quiet = true
-var gl = createContext()
 
 test('shader should compile', function (t) {
+  var gl = createContext()
   var expected = require('./fixtures/light-struct-types.json')
   var vert = glslify('./fixtures/light-struct.vert')
   var frag = glslify('./fixtures/light-struct.frag')
@@ -22,6 +22,7 @@ test('shader should compile', function (t) {
 })
 
 test('shader should support reloading', function (t) {
+  var gl = createContext()
   var expected = require('./fixtures/light-struct-types.json')
   var vert1 = glslify('./fixtures/light-struct.vert')
   var frag1 = glslify('./fixtures/light-struct.frag')
@@ -44,6 +45,7 @@ test('shader should support reloading', function (t) {
 })
 
 test('shader should fail on compile', function (t) {
+  var gl = createContext()
   var vert = glslify('./fixtures/light-struct.vert')
   var frag = glslify('./fixtures/multi-syntax-error.frag')
 
@@ -62,6 +64,7 @@ test('shader should fail on compile', function (t) {
 })
 
 test('shader should fail on link', function (t) {
+  var gl = createContext()
   var vert = glslify('./fixtures/link-err.vert')
   var frag = glslify('./fixtures/link-err.frag')
 

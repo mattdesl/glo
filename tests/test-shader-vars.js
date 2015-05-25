@@ -5,9 +5,9 @@ var createContext = require('webgl-context')
 var mat4 = require('gl-mat4')
 
 var glslify = require('glslify')
-var gl = createContext()
 
 test('shader should compile', function (t) {
+  var gl = createContext()
   var expected = require('./fixtures/light-struct-types.json')
   var vert = glslify('./fixtures/light-struct.vert')
   var frag = glslify('./fixtures/light-struct.frag')

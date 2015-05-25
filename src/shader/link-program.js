@@ -1,5 +1,5 @@
 module.exports = link
-function link (gl, program, shaders, attributes, quiet) {
+function link (gl, program, shaders, attributes, quiet, name) {
   // attach new shaders
   shaders.forEach(function (shader) {
     gl.attachShader(program, shader)
@@ -27,10 +27,15 @@ function link (gl, program, shaders, attributes, quiet) {
     })
 
     if (!quiet) {
-      console.warn(log)
+      showLog(name, log)
     }
     throw new Error('Could not link shader program')
   } else if (log && !quiet) {
-    console.warn('Shader program log:\n' + log)
+    showLog(name, log)
   }
+}
+
+function showLog (name, log) {
+  name = name ? (' (' + name + ')') : ''
+  console.warn('Shader program log' + name + '\n' + log)
 }

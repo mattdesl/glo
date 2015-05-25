@@ -4,26 +4,43 @@ var createCamera = require('perspective-camera')
 var createApp = require('canvas-loop')
 var createShader = require('../src/shader')
 var createContext = require('webgl-context')
-var testNormals = require('../shaders/sphere-normals')
+var material = require('./shaders/mat-basic')
 
 var gl = createContext()
 var canvas = document.body.appendChild(gl.canvas)
-var shader = createShader(gl, testNormals)
+var shader = createShader(gl, material)
 
-var geom = require('icosphere')(3)
+var icosphere = require('icosphere')(3)
+var torus = require('torus-mesh')()
 
 var model = require('gl-mat4/identity')([])
 
 var camera = createCamera()
 
+var createTexture = require('../src/texture/2d')
 var createMesh = require('../src/mesh')
 var mesh = createMesh(gl, { vao: true })
-  .attribute('position', geom.positions)
-  // .elements(geom.cells)
+  .attribute('position', torus.positions)
+  .attribute('uv', torus.uvs)
+  .attribute('normal', torus.normals)
+  .elements(torus.cells)
 
-createApp(canvas)
+var loadImage = require('img')
+var baboon = require('baboon-image-uri')
+var tex
+
+var app = createApp(canvas)
   .on('tick', render)
-  .start()
+
+loadImage(baboon, function (err, img) {
+  if (err) throw err
+  tex = createTexture(gl, img, {
+    wrap: gl.REPEAT,
+    minFilter: gl.LINEAR,
+    magFilter: gl.LINEAR
+  })
+  app.start()
+})
 
 function render (dt) {
   var width = gl.drawingBufferWidth
@@ -44,8 +61,10 @@ function render (dt) {
   shader.uniforms.projection(camera.projection)
   shader.uniforms.view(camera.view)
   shader.uniforms.model(model)
-  shader.uniforms.tint([1, 1, 1, 1])
+  shader.uniforms.iChannel0(0)
+  // shader.uniforms.tint([1, 1, 1, 1])
 
+  tex.bind()
   mesh.bind(shader)
   mesh.draw(gl.TRIANGLES)
   mesh.unbind(shader)

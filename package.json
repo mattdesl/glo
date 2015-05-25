@@ -4,7 +4,6 @@
   "description": "ecosystem of 3D materials and meshes",
   "main": "index.js",
   "license": "MIT",
-  "private": true,
   "author": {
     "name": "Matt DesLauriers",
     "email": "dave.des@gmail.com",
@@ -14,6 +13,7 @@
     "an-array": "^1.0.0",
     "array-pack-2d": "^0.1.0",
     "defined": "^1.0.0",
+    "dprop": "^1.0.0",
     "dtype": "^1.0.0",
     "gl-mat4": "^1.1.4",
     "gl-shader-errors": "^1.0.3",
@@ -27,6 +27,7 @@
   "devDependencies": {
     "array-pack-2d": "^0.1.0",
     "babelify": "^6.1.0",
+    "baboon-image-uri": "^1.0.1",
     "browserify": "^10.2.1",
     "budo": "^4.0.0",
     "errorify": "^0.2.4",
@@ -35,10 +36,12 @@
     "gl-geometry": "^1.0.3",
     "glslify": "^2.1.2",
     "icosphere": "^1.0.0",
+    "img": "^1.0.0",
     "installify": "^1.0.1",
     "smokestack": "^3.3.0",
     "tap-spec": "^3.0.0",
-    "tape": "^4.0.0"
+    "tape": "^4.0.0",
+    "torus-mesh": "^1.0.0"
   },
   "scripts": {
     "test": "browserify tests/*.js -t glslify | smokestack | tap-spec",

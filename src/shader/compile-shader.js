@@ -1,7 +1,7 @@
 var addLineNumbers = require('./add-line-numbers')
 
 module.exports = compile
-function compile (gl, type, source, quiet) {
+function compile (gl, type, source, quiet, name) {
   // use a trimmed source for better logging
   source = source.toString().trim()
 
@@ -20,19 +20,22 @@ function compile (gl, type, source, quiet) {
   // try to print errors in a nice and readable fashion
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     if (!quiet) {
-      showError(typeStr, shaderLog, source, quiet)
+      showLog(name, typeStr, shaderLog, source)
     }
     throw new Error('Could not compile ' + typeStr + ' shader')
   } else if (shaderLog && !quiet) {
-    console.warn(typeStr + ' shader log:\n' + shaderLog)
+    showLog(name, typeStr, shaderLog, source)
   }
 
   return shader
 }
 
-function showError (type, log, source) {
-  var lines = addLineNumbers(source)
-  var full = lines.join('\n')
-  console.warn('Error in ' + type + ' shader:\n' + full + '\n')
-  console.warn('Shader Log:\n' + log)
+function showLog (name, type, log, source) {
+  if (source) {
+    var lines = addLineNumbers(source)
+    var full = lines.join('\n')
+    console.warn('Error in ' + type + ' shader:\n' + full + '\n')
+  }
+  name = name ? (' (' + name + ')') : ''
+  console.warn('Shader Log' + name + '\n' + log)
 }

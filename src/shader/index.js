@@ -2,12 +2,17 @@ var compileShader = require('./compile-shader')
 var linkShaders = require('./link-program')
 var extract = require('gl-shader-extract')
 var reflect = require('glsl-extract-reflect')
+var getter = require('dprop')
+
+var defaultVertex = 'attribute vec4 position; void main() { gl_Position = position; gl_PointSize = 1.0; }'
+var defaultFragment = 'precision mediump float; void main() { gl_FragColor = vec4(1.0); }'
 
 module.exports = createShader
 function createShader (gl, opt) {
   var program = gl.createProgram()
   var vertexShader, fragmentShader
   var types, uniforms, attributes
+  var name = opt.name || ''
 
   var shader = {
     dispose: disposeProgram,
@@ -70,13 +75,16 @@ function createShader (gl, opt) {
     var quiet = opt.quiet
     var attributeBindings = opt.attributes
 
+    var vertSrc = opt.vertex || defaultVertex
+    var fragSrc = opt.fragment || defaultFragment
+
     // re-compile source
-    vertexShader = compileShader(gl, gl.VERTEX_SHADER, opt.vertex, quiet)
-    fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, opt.fragment, quiet)
+    vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertSrc, quiet, name)
+    fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragSrc, quiet, name)
 
     // re-link
     var shaders = [ vertexShader, fragmentShader ]
-    linkShaders(gl, program, shaders, attributeBindings, quiet)
+    linkShaders(gl, program, shaders, attributeBindings, quiet, name)
 
     // extract uniforms and attributes
     types = extract(gl, program)
@@ -126,14 +134,6 @@ function createShader (gl, opt) {
 
 function compareString (a, b) {
   return a.name.localeCompare(b.name)
-}
-
-function getter (fn) {
-  return {
-    configurable: true,
-    enumerable: true,
-    get: fn
-  }
 }
 
 function getPropSetter (path, location, type) {

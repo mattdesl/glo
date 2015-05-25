@@ -23,19 +23,11 @@ assign(VertexBufferObject.prototype, {
 
   // associate this VBO with the given shader
   bind: function bind (shader) {
-    if (!shader) {
-      throw new Error('must provide shader to vbo bind()')
-    }
-
     attribs.bind(this.gl, this.attributes, this.elements, shader.attributes)
   },
 
   // must be the same shader that was used in bind()
   unbind: function unbind (shader) {
-    if (!shader) {
-      throw new Error('must provide shader to vbo unbind()')
-    }
-
     attribs.unbind(this.gl, this.attributes, this.elements, shader.attributes)
   }
 })

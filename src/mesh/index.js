@@ -3,12 +3,13 @@ var pack = require('array-pack-2d')
 var dtype = require('dtype')
 var fromGLType = require('./gl-to-dtype')
 var createBuffer = require('./buffer')
-var createVBO = require('./vbo')
-var createVAO = require('./vao')
+var createVBO = require('./vertex-buffer-object')
+var createVAO = require('./vertex-array-object')
 
 var indexOfName = require('indexof-property')('name')
 var anArray = require('an-array')
 var defined = require('defined')
+var getter = require('dprop')
 
 module.exports = function createMesh (gl, opt) {
   return new AttributeMesh(gl, opt)
@@ -23,22 +24,30 @@ function AttributeMesh (gl, opt) {
   this.bindings = opt.vao ? createVAO(gl) : createVBO(gl)
 }
 
-Object.defineProperty(AttributeMesh.prototype, 'count', {
-  configurable: true, enumerable: true,
-  get: function () {
-    if (this._elements) {
-      return this._elements.length
-    } else {
-      if (this.attributes.length === 0) return 0
-      return this.attributes[0].buffer.length / this.attributes[0].size
-    }
+Object.defineProperty(AttributeMesh.prototype, 'count', getter(function () {
+  if (this._elements) {
+    return this._elements.length
+  } else {
+    if (this.attributes.length === 0) return 0
+    return this.attributes[0].buffer.length / this.attributes[0].size
   }
-})
+}))
 
 assign(AttributeMesh.prototype, {
-
   bind: function bind (shader) {
+    if (!shader) {
+      throw new Error('must provide shader to mesh bind()')
+    }
+
     if (this._dirty) {
+      for (var i = 0; i < this.attributes.length; i++) {
+        var name = this.attributes[i].name
+        var attrib = shader.attributes[name]
+        if (!attrib || typeof attrib.location !== 'number') {
+          console.warn("Specified shader does not have an attribute '" + name + "'")
+        }
+      }
+
       this.bindings.update(this.attributes, this._elements, this._elementsType)
       this._dirty = false
     }
@@ -48,6 +57,10 @@ assign(AttributeMesh.prototype, {
   },
 
   unbind: function unbind (shader) {
+    if (!shader) {
+      throw new Error('must provide shader to mesh unbind()')
+    }
+
     this.bindings.unbind(shader)
     return this
   },
@@ -59,20 +72,18 @@ assign(AttributeMesh.prototype, {
   },
 
   // replaces attribute
-  attribute: function attribute (name, opt) {
+  attribute: function attribute (name, data, opt) {
     var attribIdx = indexOfName(this.attributes, name)
     var attrib = attribIdx === -1 ? null : this.attributes[attribIdx]
-    if (!opt) { // getter
+    if (typeof data === 'undefined') { // getter
       return attrib
     }
 
     var gl = this.gl
-    if (anArray(opt)) { // allow just array param
-      opt = { data: opt }
-    }
+    opt = opt || {}
 
-    var array = unroll(opt.data, fromGLType(opt.type) || 'float32')
-    var size = opt.size || guessSize(opt.data, 3)
+    var array = unroll(data, fromGLType(opt.type) || 'float32')
+    var size = opt.size || guessSize(data, 3)
     var buffer
     if (!attrib) { // create new attribute
       buffer = createBuffer(gl, array, gl.ARRAY_BUFFER, opt.usage)
@@ -93,18 +104,15 @@ assign(AttributeMesh.prototype, {
     return this
   },
 
-  elements: function elements (opt) {
-    if (!opt) { // getter
+  elements: function elements (data, opt) {
+    if (typeof data === 'undefined') { // getter
       return this._elements
     }
 
+    opt = opt || {}
     var gl = this.gl
-    if (anArray(opt)) { // allow just array param
-      opt = { data: opt }
-    }
-
-    var size = opt.size || guessSize(opt.data, 3)
-    var array = unroll(opt.data, fromGLType(opt.type) || 'uint16')
+    var size = opt.size || guessSize(data, 3)
+    var array = unroll(data, fromGLType(opt.type) || 'uint16')
 
     if (this._elements) { // update existing
       this._elementsType = opt.type

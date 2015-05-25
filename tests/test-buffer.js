@@ -31,5 +31,7 @@ test('should create array buffer', function (t) {
   t.equal(usage, gl.DYNAMIC_DRAW, 'GPU usage storage')
   length = gl.getBufferParameter(gl.ELEMENT_ARRAY_BUFFER, gl.BUFFER_SIZE)
   t.equal(length, elements.byteLength, 'GPU length storage')
+
+  buffer.dispose()
   t.end()
 })

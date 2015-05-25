@@ -1,5 +1,5 @@
 var VertexObject = require('./vertex-object')
-var createVBO = require('./vbo')
+var createVBO = require('./vertex-buffer-object')
 var assign = require('object-assign')
 var attribs = require('./attribute-utils')
 

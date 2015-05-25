@@ -12,7 +12,7 @@ var canvas = document.body.appendChild(gl.canvas)
 var shader = createShader(gl, testNormals)
 var pack = require('array-pack-2d')
 
-var geom = require('icosphere')(3)
+var icosphere = require('icosphere')(3)
 
 var model = require('gl-mat4/identity')([])
 
@@ -21,8 +21,8 @@ var camera = createCamera()
 var createBuffer = require('../src/mesh/buffer')
 var createVBO = require('../src/mesh/vbo')
 
-var positions = createBuffer(gl, pack(geom.positions))
-var elements = createBuffer(gl, pack(geom.cells, 'uint16'), gl.ELEMENT_ARRAY_BUFFER)
+var positions = createBuffer(gl, pack(icosphere.positions))
+var elements = createBuffer(gl, pack(icosphere.cells, 'uint16'), gl.ELEMENT_ARRAY_BUFFER)
 var vbo = createVBO(gl, [
   {
     name: 'position',

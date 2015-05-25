@@ -14,6 +14,7 @@ function bindAttribs (gl, attributes, elements, locations) {
     var attrib = attributes[i]
     var buffer = attrib.buffer
     var loc = getLocation(locations, attrib)
+    if (loc === null) continue
 
     var size = typeof attrib.size === 'number' ? attrib.size : 4
     var type = typeof attrib.type === 'number' ? attrib.type : gl.FLOAT
@@ -33,6 +34,7 @@ function unbindAttribs (gl, attributes, elements, locations) {
   for (var i = 0; i < attributes.length; i++) {
     var attrib = attributes[i]
     var loc = getLocation(locations, attrib)
+    if (loc === null) continue
     gl.disableVertexAttribArray(loc)
   }
 }
@@ -47,7 +49,7 @@ function getLocation (locations, attribute) {
   var name = attribute.name
   var shaderAttrib = locations[name]
   if (!shaderAttrib) {
-    throw new Error('could not find attribute by name: ' + name)
+    return null
   }
   return shaderAttrib.location
 }
