@@ -1,6 +1,9 @@
 var defined = require('defined')
 var assign = require('object-assign')
 var prop = require('dprop')
+var pack = require('array-pack-2d')
+var dtype = require('dtype')
+var fromGLType = require('gl-to-dtype')
 
 module.exports = createTexture2D
 function createTexture2D (gl, element, shape, opt) {
@@ -107,6 +110,10 @@ Object.defineProperties(Texture2D.prototype, {
 
 assign(Texture2D.prototype, {
 
+  dispose: function dispose () {
+    this.gl.deleteTexture(this.handle)
+  },
+
   bind: function bind (slot) {
     var gl = this.gl
     var target = this.target
@@ -183,7 +190,7 @@ function texImage (texture, data, shape, offset, level) {
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, texture.unpackAlignment)
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY)
 
-  data = normalize(data)
+  data = normalize(data, type, shape[2])
   level = level || 0
   if (isDOMType(data)) {
     if (offset) {
@@ -211,9 +218,20 @@ function isDOMType (data) {
     || (typeof HTMLVideoElement !== 'undefined' && data instanceof HTMLVideoElement)
 }
 
-function normalize (pixels) {
-  // normalize uint8 types
-  if (pixels instanceof Uint8ClampedArray || Array.isArray(pixels))
+function normalize (pixels, glType, depth) {
+  if (Array.isArray(pixels)) {
+    var type = fromGLType(glType)
+    if (Array.isArray(pixels[0])) { // nested
+      if (pixels[0].length !== depth) {
+        throw new Error('nested array length does not match expected components in texture format')
+      }
+      return pack(pixels, type)
+    } else {
+      return new (dtype(type))(pixels)
+    }
+  } else if (pixels instanceof Uint8ClampedArray) {
+    // normalize uint8 types for webGL
     return new Uint8Array(pixels)
+  }
   return pixels || null
 }

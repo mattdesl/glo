@@ -18,9 +18,11 @@
     "gl-mat4": "^1.1.4",
     "gl-shader-errors": "^1.0.3",
     "gl-shader-extract": "^1.0.2",
+    "gl-to-dtype": "^1.0.0",
     "glsl-extract-reflect": "^1.0.0",
     "glsl-face-normal": "^1.0.2",
     "indexof-property": "^1.1.1",
+    "is-power-of-two": "^1.0.0",
     "object-assign": "^2.0.0",
     "pad-left": "^1.0.2"
   },

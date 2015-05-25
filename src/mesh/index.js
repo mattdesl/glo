@@ -1,13 +1,12 @@
 var assign = require('object-assign')
 var pack = require('array-pack-2d')
 var dtype = require('dtype')
-var fromGLType = require('./gl-to-dtype')
+var fromGLType = require('gl-to-dtype')
 var createBuffer = require('./buffer')
 var createVBO = require('./vertex-buffer-object')
 var createVAO = require('./vertex-array-object')
 
 var indexOfName = require('indexof-property')('name')
-var anArray = require('an-array')
 var defined = require('defined')
 var getter = require('dprop')
 
