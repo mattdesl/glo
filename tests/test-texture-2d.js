@@ -4,10 +4,16 @@ var createTexture2D = require('../src/texture/2d')
 var createContext = require('webgl-context')
 var baboon = require('baboon-image-uri')
 var loadImage = require('img')
+var readTexture = require('gl-texture2d-pixels')
 
-test('should create array buffer', function (t) {
+test('should create texture from image', function (t) {
   var gl = createContext()
-  t.plan(1)
+  var ext = gl.getExtension('EXT_texture_filter_anisotropic')
+
+  var count = 8
+  if (ext)
+    count++
+  t.plan(count)
 
   loadImage(baboon, function (err, image) {
     if (err) t.fail(err)
@@ -15,7 +21,71 @@ test('should create array buffer', function (t) {
     var tex = createTexture2D(gl, image, {
       wrap: gl.REPEAT,
       minFilter: gl.LINEAR,
-      magFilter: gl.LINEAR
+      magFilter: gl.NEAREST,
+      mipSamples: 3
     })
+
+    tex.bind()
+    var pixels = readTexture(tex)
+    t.equal(pixels.length, image.width * image.height * 4, 'correct pixels')
+    t.equal(tex.width, image.width)
+    t.equal(tex.height, image.height)
+    t.deepEqual(tex.shape, [ image.width, image.height, 4 ])
+
+    t.equal(tex.minFilter, gl.LINEAR)
+    t.equal(tex.magFilter, gl.NEAREST)
+    t.deepEqual(tex.wrap, [ gl.REPEAT, gl.REPEAT ])
+    
+    if (ext) {
+      var samples = gl.getTexParameter(tex.target, ext.TEXTURE_MAX_ANISOTROPY_EXT)
+      t.equal(samples, 3, 'mip samples set')
+    }
+    readTexture.dispose()
   })
 })
+
+
+test('should create from RGB uint8_clamped pixels', function (t) {
+  var gl = createContext()
+  var pixels = new Uint8ClampedArray([ 155, 15, 255 ])
+  var expected = new Uint8Array([ 155, 15, 255, 255 ])
+  run(t, pixels, gl.RGB, gl.UNSIGNED_BYTE, expected)
+})
+
+test('should create from RGBA uint8_clamped pixels', function (t) {
+  var gl = createContext()
+  var pixels = new Uint8ClampedArray([ 155, 15, 255, 128 ])
+  var expected = new Uint8Array([ 155, 15, 255, 128 ])
+  run(t, pixels, gl.RGBA, gl.UNSIGNED_BYTE, expected)
+})
+
+test('should accept float type texture', function (t) {
+  var gl = createContext()
+  var pixels = new Float32Array([ 1, -3, -10, -50 ])
+    
+  var ext = gl.getExtension('OES_texture_float')
+  if (!ext)
+    t.fail("This device does not support OES_texture_float")
+  var shape = [1, 1]
+  var tex = createTexture2D(gl, pixels, shape, {
+    format: gl.RGBA,
+    type: gl.FLOAT
+  })
+  tex.bind()
+})
+
+function run (t, pixels, format, type, expected) {
+  var gl = createContext()
+
+  var shape = [1, 1]
+  var tex = createTexture2D(gl, pixels, shape, {
+    format: format,
+    type: type
+  })
+  tex.bind()
+
+  var imagePixels = readTexture(tex)
+  t.deepEqual(imagePixels, expected, 'matches color')
+  readTexture.dispose()
+  t.end()
+}

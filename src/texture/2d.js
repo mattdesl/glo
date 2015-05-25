@@ -11,9 +11,7 @@ var zero = [0, 0]
 var tmp = [0, 0]
 
 function Texture2D (gl, element, shape, opt) {
-  // constructors:
-  //   tex(gl, data, [ 25, 15 ], { flipY: false })
-  //   tex(gl, element, { flipY: false })
+  // accept element only constructor (no shape)
   if (isDOMType(element)
       && !Array.isArray(shape)
       && typeof shape === 'object') {
@@ -36,11 +34,13 @@ function Texture2D (gl, element, shape, opt) {
   this._wrap = []
   this._minFilter = null
   this._magFilter = null
+  this._mipSamples = 1
   this.update(element, shape)
 
   this.minFilter = defined(opt.minFilter, gl.NEAREST)
   this.magFilter = defined(opt.magFilter, gl.NEAREST)
   this.wrap = defined(opt.wrap, gl.CLAMP_TO_EDGE)
+  this.mipSamples = defined(opt.mipSamples, 1)
 }
 
 Object.defineProperties(Texture2D.prototype, {
@@ -51,6 +51,21 @@ Object.defineProperties(Texture2D.prototype, {
 
   height: prop(function () {
     return this.shape[1]
+  }),
+
+  // anisotropic filtering
+  mipSamples: prop(function () {
+    return this._mipSamples
+  }, function (samples) {
+    var old = this._mipSamples
+    this._mipSamples = Math.max(samples, 1) | 0
+    if (old !== this._mipSamples) {
+      var gl = this.gl
+      var ext = gl.getExtension('EXT_texture_filter_anisotropic')
+      if (ext) {
+        gl.texParameterf(this.target, ext.TEXTURE_MAX_ANISOTROPY_EXT, this._mipSamples)
+      }
+    }
   }),
 
   minFilter: prop(function () {
@@ -111,7 +126,7 @@ assign(Texture2D.prototype, {
     this.shape[0] = shape[0]
     this.shape[1] = shape[1]
 
-    var depth = 1
+    var depth = 4
     var gl = this.gl
     switch (this.format) {
       case gl.DEPTH_COMPONENT:
@@ -168,6 +183,7 @@ function texImage (texture, data, shape, offset, level) {
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, texture.unpackAlignment)
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY)
 
+  data = normalize(data)
   level = level || 0
   if (isDOMType(data)) {
     if (offset) {
@@ -177,8 +193,6 @@ function texImage (texture, data, shape, offset, level) {
       gl.texImage2D(target, level, format, format, type, data)
     }
   } else {
-    data = data || null // coerce falsey to null for GL
-
     if (offset) {
       gl.texSubImage2D(target, level, offset[0], offset[1],
           shape[0], shape[1], format, type, data)
@@ -195,4 +209,11 @@ function isDOMType (data) {
     || (typeof ImageData !== 'undefined' && data instanceof ImageData)
     || (typeof HTMLImageElement !== 'undefined' && data instanceof HTMLImageElement)
     || (typeof HTMLVideoElement !== 'undefined' && data instanceof HTMLVideoElement)
+}
+
+function normalize (pixels) {
+  // normalize uint8 types
+  if (pixels instanceof Uint8ClampedArray || Array.isArray(pixels))
+    return new Uint8Array(pixels)
+  return pixels || null
 }
