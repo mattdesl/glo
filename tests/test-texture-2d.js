@@ -60,6 +60,48 @@ test('should handle array data', function (t) {
   t.end()
 })
 
+test('should accept canvas element', function (t) {
+  var canvas = document.createElement('canvas')
+  var ctx = canvas.getContext('2d')
+  canvas.width = 1
+  canvas.height = 1
+  ctx.fillStyle = 'red'
+  ctx.fillRect(0, 0, 1, 1)
+
+  var gl = createContext()
+  var tex = createTexture2D(gl, canvas)
+  tex.bind()
+  var pixels = readTexture(tex)
+  t.deepEqual(pixels, new Uint8Array([ 255, 0, 0, 255 ]))
+
+  readTexture.dispose()
+  t.end()
+})
+
+test('should create empty texture', function (t) {
+  var gl = createContext()
+  var tex = createTexture2D(gl)
+  tex.bind()
+  var pixels = readTexture(tex)
+  t.deepEqual(pixels, new Uint8Array([ 0, 0, 0, 0 ]))
+  t.deepEqual(tex.shape, [ 1, 1, 4 ])
+
+  tex.format = gl.RGB
+  tex.update(null, [ 2, 2 ])
+  tex.bind()
+  pixels = readTexture(tex)
+  t.deepEqual(pixels, new Uint8Array([
+    0, 0, 0, 255,
+    0, 0, 0, 255,
+    0, 0, 0, 255,
+    0, 0, 0, 255
+  ]))
+  t.deepEqual(tex.shape, [ 2, 2, 3 ])
+
+  readTexture.dispose()
+  t.end()
+})
+
 test('should create texture from image', function (t) {
   var gl = createContext()
   var ext = gl.getExtension('EXT_texture_filter_anisotropic')

@@ -172,12 +172,14 @@ assign(Texture2D.prototype, {
 
 function texShape (data) {
   // fetch shape from DOM element
-  if (typeof data.width === 'number' && typeof data.height === 'number') {
+  if (data && typeof data.width === 'number' && typeof data.height === 'number') {
     tmp[0] = data.width
     tmp[1] = data.height
     return tmp
   } else {
-    throw new TypeError('could not determine shape (width, height) for texture.updateSubImage')
+    tmp[0] = 1
+    tmp[1] = 1
+    return tmp
   }
 }
 
