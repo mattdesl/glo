@@ -32,15 +32,45 @@ var tex
 var app = createApp(canvas)
   .on('tick', render)
 
-loadImage(baboon, function (err, img) {
+var parseDDS = require('parse-dds')
+require('xhr')({
+  responseType: 'arraybuffer',
+  uri: 'assets/test-dxt1.dds'
+}, function (err, resp, data) {
   if (err) throw err
-  tex = createTexture(gl, img, {
-    wrap: gl.REPEAT,
-    minFilter: gl.LINEAR,
-    magFilter: gl.LINEAR
+  var ext = gl.getExtension('WEBGL_compressed_texture_s3tc')
+  if (!ext)
+    throw new Error('compressed texture not supported')
+
+  var dds = parseDDS(data)
+  tex = createTexture(gl)
+  tex.compressed = true
+  tex.format = getFormat(ext, dds.format)
+  tex.wrap = gl.REPEAT
+  tex.minFilter = gl.LINEAR_MIPMAP_LINEAR
+  tex.magFilter = gl.LINEAR
+
+  dds.images.forEach(function (image, level) {
+    var array = new Uint8Array(data, image.offset, image.length)
+    tex.update(array, image.shape, level)
   })
+
   app.start()
 })
+
+function getFormat (ext, ddsFormat) {
+  switch (ddsFormat) {
+    case 'dxt1':
+      return ext.COMPRESSED_RGB_S3TC_DXT1_EXT
+    case 'dxt3':
+      return ext.COMPRESSED_RGBA_S3TC_DXT3_EXT
+    case 'dxt5':
+      return ext.COMPRESSED_RGBA_S3TC_DXT5_EXT
+    default:
+      throw new Error('unsupported format ' + ddsFormat)
+  }
+}
+
 
 function render (dt) {
   var width = gl.drawingBufferWidth
@@ -53,7 +83,7 @@ function render (dt) {
 
   camera.viewport = [0, 0, width, height]
   camera.identity()
-  camera.translate([ 0, 0, -4 ])
+  camera.translate([ -3, 0, -4 ])
   camera.lookAt([ 0, 0, 0 ])
   camera.update()
 

@@ -26,6 +26,7 @@ function Texture2D (gl, element, shape, opt) {
 
   this.gl = gl
   this.format = opt.format || gl.RGBA
+  this.compressed = Boolean(opt.compressed)
   this.type = opt.type || gl.UNSIGNED_BYTE
   this.flipY = Boolean(opt.flipY)
   this.unpackAlignment = defined(opt.unpackAlignment, 1)
@@ -130,27 +131,32 @@ assign(Texture2D.prototype, {
 
   update: function update (data, shape, level) {
     shape = shape || texShape(data)
-    this.shape[0] = shape[0]
-    this.shape[1] = shape[1]
 
-    var depth = 4
-    var gl = this.gl
-    switch (this.format) {
-      case gl.DEPTH_COMPONENT:
-      case gl.ALPHA:
-      case gl.LUMINANCE:
-        depth = 1; break
-      case gl.LUMINANCE_ALPHA:
-        depth = 2; break
-      case gl.RGB:
-        depth = 3; break
-      case gl.RGBA:
-        depth = 4; break
+    // level zero, update texture shape
+    if (!level) {
+      var depth = 4
+      var gl = this.gl
+      switch (this.format) {
+        case gl.DEPTH_COMPONENT:
+        case gl.ALPHA:
+        case gl.LUMINANCE:
+          depth = 1; break
+        case gl.LUMINANCE_ALPHA:
+          depth = 2; break
+        case gl.RGB:
+          depth = 3; break
+        case gl.RGBA:
+          depth = 4; break
+      }
+
+      this.shape[0] = shape[0]
+      this.shape[1] = shape[1]
+      this.shape[2] = depth
+      shape = this.shape
     }
 
-    this.shape[2] = depth
     this.bind()
-    texImage(this, data, this.shape, null, level)
+    texImage(this, data, shape, null, level)
   },
 
   updateSubImage: function updateSubImage (data, shape, offset, level) {
@@ -188,6 +194,9 @@ function texImage (texture, data, shape, offset, level) {
   var format = texture.format
   var type = texture.type
   var target = texture.target
+  var compressed = texture.compressed
+  var width = shape[0]
+  var height = shape[1]
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha)
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, texture.unpackAlignment)
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY)
@@ -195,6 +204,9 @@ function texImage (texture, data, shape, offset, level) {
   data = normalize(data, type, shape[2])
   level = level || 0
   if (isDOMType(data)) {
+    if (compressed) {
+      throw new Error('compressed textures must provide ArrayBuffer')
+    }
     if (offset) {
       gl.texSubImage2D(target, level, offset[0], offset[1],
         format, type, data)
@@ -203,11 +215,21 @@ function texImage (texture, data, shape, offset, level) {
     }
   } else {
     if (offset) {
-      gl.texSubImage2D(target, level, offset[0], offset[1],
-          shape[0], shape[1], format, type, data)
+      if (compressed) {
+        gl.compressedTexSubImage2D(target, level, 
+            offset[0], offset[1], width, height, format, data)
+      } else {
+        gl.texSubImage2D(target, level, offset[0], offset[1],
+            width, height, format, type, data)
+      }
     } else {
-      gl.texImage2D(target, level, format, shape[0], shape[1],
-        0, format, type, data)
+      if (compressed) {
+        gl.compressedTexImage2D(target, level, format, 
+          width, height, 0, data)
+      } else {
+        gl.texImage2D(target, level, format, width, height,
+          0, format, type, data)
+      }
     }
   }
 }
@@ -223,6 +245,9 @@ function isDOMType (data) {
 function normalize (pixels, glType, depth) {
   if (Array.isArray(pixels)) {
     var type = fromGLType(glType)
+    if (!type) {
+      throw new Error('bare arrays must use a common gl texture type')
+    }
     if (Array.isArray(pixels[0])) { // nested
       if (pixels[0].length !== depth) {
         throw new Error('nested array length does not match expected components in texture format')

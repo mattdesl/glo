@@ -40,14 +40,17 @@
     "icosphere": "^1.0.0",
     "img": "^1.0.0",
     "installify": "^1.0.1",
+    "parse-dds": "^1.0.0",
     "smokestack": "^3.3.0",
     "tap-spec": "^3.0.0",
     "tape": "^4.0.0",
-    "torus-mesh": "^1.0.0"
+    "torus-mesh": "^1.0.0",
+    "xhr": "^2.0.1"
   },
   "scripts": {
     "test": "browserify tests/*.js -t glslify | smokestack | tap-spec",
-    "dev": "./tools/run.sh",
+    "start-demo": "./tools/demo.sh",
+    "start-test": "./tools/test.sh",
     "start": "./tools/run.sh examples/basic.js"
   },
   "keywords": [],
