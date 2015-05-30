@@ -78,6 +78,21 @@ test('should accept canvas element', function (t) {
   t.end()
 })
 
+
+test('should handle non-POT with grace', function (t) {
+  var gl = createContext()
+  var tex = createTexture2D(gl, [
+    [ 0, 0, 255 ], [ 0, 255, 0 ], [ 255, 0, 0 ]
+  ], [ 3, 1 ], { format: gl.RGB })
+  tex.bind()
+  var pixels = readTexture(tex)
+  var expected = new Uint8Array([0, 0, 255, 255, 0, 255, 0, 255, 255, 0, 0, 255 ])
+  t.deepEqual(pixels, expected, 'matches pixels')
+
+  readTexture.dispose()
+  t.end()
+})
+
 test('should create empty texture', function (t) {
   var gl = createContext()
   var tex = createTexture2D(gl)

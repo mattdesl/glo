@@ -35,7 +35,7 @@ var app = createApp(canvas)
 var parseDDS = require('parse-dds')
 require('xhr')({
   responseType: 'arraybuffer',
-  uri: 'assets/test-dxt1.dds'
+  uri: 'assets/texture3.dds'
 }, function (err, resp, data) {
   if (err) throw err
   var ext = gl.getExtension('WEBGL_compressed_texture_s3tc')
@@ -72,7 +72,7 @@ function getFormat (ext, ddsFormat) {
 }
 
 
-function render (dt) {
+function render () {
   var width = gl.drawingBufferWidth
   var height = gl.drawingBufferHeight
   gl.viewport(0, 0, width, height)

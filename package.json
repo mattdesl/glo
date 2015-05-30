@@ -24,7 +24,8 @@
     "indexof-property": "^1.1.1",
     "is-power-of-two": "^1.0.0",
     "object-assign": "^2.0.0",
-    "pad-left": "^1.0.2"
+    "pad-left": "^1.0.2",
+    "through2": "^0.6.5"
   },
   "devDependencies": {
     "array-pack-2d": "^0.1.0",
@@ -32,19 +33,24 @@
     "baboon-image-uri": "^1.0.1",
     "browserify": "^10.2.1",
     "budo": "^4.0.0",
+    "concat-stream": "^1.4.8",
     "errorify": "^0.2.4",
     "garnish": "^2.1.3",
     "gl-buffer-snoop": "^1.0.0",
     "gl-geometry": "^1.0.3",
+    "global": "^4.3.0",
     "glslify": "^2.1.2",
     "icosphere": "^1.0.0",
     "img": "^1.0.0",
     "installify": "^1.0.1",
     "parse-dds": "^1.0.0",
     "smokestack": "^3.3.0",
+    "tap-closer": "^1.0.0",
+    "tap-finished": "0.0.1",
     "tap-spec": "^3.0.0",
     "tape": "^4.0.0",
     "torus-mesh": "^1.0.0",
+    "watchify": "^3.2.1",
     "xhr": "^2.0.1"
   },
   "scripts": {

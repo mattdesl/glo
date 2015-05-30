@@ -1,9 +1,10 @@
 var defined = require('defined')
 var assign = require('object-assign')
 var prop = require('dprop')
-var pack = require('array-pack-2d')
-var dtype = require('dtype')
-var fromGLType = require('gl-to-dtype')
+var isDOMImage = require('./is-dom-image')
+var texImage2D = require('./tex-image-2d')
+var isPOT = require('is-power-of-two')
+
 
 module.exports = createTexture2D
 function createTexture2D (gl, element, shape, opt) {
@@ -15,7 +16,7 @@ var tmp = [0, 0]
 
 function Texture2D (gl, element, shape, opt) {
   // accept element only constructor (no shape)
-  if (isDOMType(element)
+  if (isDOMImage(element)
       && !Array.isArray(shape)
       && typeof shape === 'object') {
     opt = shape
@@ -126,6 +127,10 @@ assign(Texture2D.prototype, {
 
   generateMipmap: function generateMipmap () {
     this.bind()
+    if (!isValidSize(this.width) || !isValidSize(this.height)) {
+      console.warn('Mipmapping not supported for non-power of ' +
+        'two texture size', this.width + 'x' + this.height)
+    }
     this.gl.generateMipmap(this.target)
   },
 
@@ -156,7 +161,7 @@ assign(Texture2D.prototype, {
     }
 
     this.bind()
-    texImage(this, data, shape, null, level)
+    texImage2D(this, this.target, data, shape, null, level)
   },
 
   updateSubImage: function updateSubImage (data, shape, offset, level) {
@@ -164,7 +169,7 @@ assign(Texture2D.prototype, {
     //   updateSubImage(data, [ 25, 15 ], mipLevel)
     //   updateSubImage(element, mipLevel)
 
-    if (isDOMType(data)) {
+    if (isDOMImage(data)) {
       level = offset
       offset = shape
     }
@@ -172,7 +177,7 @@ assign(Texture2D.prototype, {
     offset = offset || zero
     shape = shape || texShape(data)
     this.bind()
-    texImage(this, data, shape, offset, level)
+    texImage2D(this, this.target, data, shape, offset, level)
   }
 })
 
@@ -189,76 +194,6 @@ function texShape (data) {
   }
 }
 
-function texImage (texture, data, shape, offset, level) {
-  var gl = texture.gl
-  var format = texture.format
-  var type = texture.type
-  var target = texture.target
-  var compressed = texture.compressed
-  var width = shape[0]
-  var height = shape[1]
-  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha)
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, texture.unpackAlignment)
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY)
-
-  data = normalize(data, type, shape[2])
-  level = level || 0
-  if (isDOMType(data)) {
-    if (compressed) {
-      throw new Error('compressed textures must provide ArrayBuffer')
-    }
-    if (offset) {
-      gl.texSubImage2D(target, level, offset[0], offset[1],
-        format, type, data)
-    } else {
-      gl.texImage2D(target, level, format, format, type, data)
-    }
-  } else {
-    if (offset) {
-      if (compressed) {
-        gl.compressedTexSubImage2D(target, level, 
-            offset[0], offset[1], width, height, format, data)
-      } else {
-        gl.texSubImage2D(target, level, offset[0], offset[1],
-            width, height, format, type, data)
-      }
-    } else {
-      if (compressed) {
-        gl.compressedTexImage2D(target, level, format, 
-          width, height, 0, data)
-      } else {
-        gl.texImage2D(target, level, format, width, height,
-          0, format, type, data)
-      }
-    }
-  }
-}
-
-function isDOMType (data) {
-  /*global HTMLCanvasElement, ImageData, HTMLImageElement, HTMLVideoElement */
-  return (typeof HTMLCanvasElement !== 'undefined' && data instanceof HTMLCanvasElement)
-    || (typeof ImageData !== 'undefined' && data instanceof ImageData)
-    || (typeof HTMLImageElement !== 'undefined' && data instanceof HTMLImageElement)
-    || (typeof HTMLVideoElement !== 'undefined' && data instanceof HTMLVideoElement)
-}
-
-function normalize (pixels, glType, depth) {
-  if (Array.isArray(pixels)) {
-    var type = fromGLType(glType)
-    if (!type) {
-      throw new Error('bare arrays must use a common gl texture type')
-    }
-    if (Array.isArray(pixels[0])) { // nested
-      if (pixels[0].length !== depth) {
-        throw new Error('nested array length does not match expected components in texture format')
-      }
-      return pack(pixels, type)
-    } else {
-      return new (dtype(type))(pixels)
-    }
-  } else if (pixels instanceof Uint8ClampedArray) {
-    // normalize uint8 types for webGL
-    return new Uint8Array(pixels)
-  }
-  return pixels || null
+function isValidSize(n) {
+	return n >= 0 && (n === 0 || isPOT(n))
 }
