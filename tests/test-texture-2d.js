@@ -112,7 +112,6 @@ test('should create empty texture', function (t) {
     0, 0, 0, 255
   ]))
   t.deepEqual(tex.shape, [ 2, 2, 3 ])
-
   readTexture.dispose()
   t.end()
 })
@@ -184,6 +183,7 @@ test('should accept float type texture', function (t) {
     type: gl.FLOAT
   })
   tex.bind()
+  t.ok(true, 'got a float type')
   t.end()
 })
 

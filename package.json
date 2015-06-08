@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "an-array": "^1.0.0",
+    "array-equal": "^1.0.0",
     "array-pack-2d": "^0.1.0",
     "defined": "^1.0.0",
     "dprop": "^1.0.0",
@@ -23,6 +24,8 @@
     "glsl-face-normal": "^1.0.2",
     "indexof-property": "^1.1.1",
     "is-power-of-two": "^1.0.0",
+    "negate": "^1.0.0",
+    "new-array": "^1.0.0",
     "object-assign": "^2.0.0",
     "pad-left": "^1.0.2",
     "through2": "^0.6.5"
@@ -46,6 +49,7 @@
     "parse-dds": "^1.0.0",
     "smokestack": "^3.3.0",
     "tap-closer": "^1.0.0",
+    "tap-dev-tool": "^1.1.0",
     "tap-finished": "0.0.1",
     "tap-spec": "^3.0.0",
     "tape": "^4.0.0",

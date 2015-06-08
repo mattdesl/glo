@@ -5,13 +5,10 @@ var fromGLType = require('gl-to-dtype')
 
 module.exports = texImage2D
 function texImage2D (texture, target, data, shape, offset, level) {
-	var gl = texture.gl
+  var gl = texture.gl
   var format = texture.format
   var type = texture.type
   var compressed = texture.compressed
-  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha)
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, texture.unpackAlignment)
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, texture.flipY)
 
   var width = shape[0]
   var height = shape[1]
@@ -30,7 +27,7 @@ function texImage2D (texture, target, data, shape, offset, level) {
   } else {
     if (offset) {
       if (compressed) {
-        gl.compressedTexSubImage2D(target, level, 
+        gl.compressedTexSubImage2D(target, level,
             offset[0], offset[1], width, height, format, data)
       } else {
         gl.texSubImage2D(target, level, offset[0], offset[1],
@@ -38,7 +35,7 @@ function texImage2D (texture, target, data, shape, offset, level) {
       }
     } else {
       if (compressed) {
-        gl.compressedTexImage2D(target, level, format, 
+        gl.compressedTexImage2D(target, level, format,
           width, height, 0, data)
       } else {
         gl.texImage2D(target, level, format, width, height,
