@@ -35,3 +35,19 @@ test('should create cube texture', function (t) {
   })
 })
 
+test('should handle texture shape', function (t) {
+  var gl = createContext()
+
+  var cube = createTextureCube(gl)
+  t.deepEqual(cube.shape, [ 1, 1, 6, 4 ], 'should create 1x1 cube texture')
+
+  var cube2 = createTextureCube(gl, null, [ 128, 128 ])
+  t.deepEqual(cube2.shape, [ 128, 128, 6, 4 ], 'should create sized empty cube tex')
+  t.deepEqual(cube2.depth, 6)
+  t.deepEqual(cube2.width, 128)
+  t.deepEqual(cube2.height, 128)
+
+  cube2.update(null, [64, 64])
+  t.deepEqual(cube2.shape, [ 64, 64, 6, 4 ], 'should resize on mipmap level 0')
+  t.end()
+})

@@ -88,6 +88,10 @@ Object.defineProperties(Texture.prototype, {
 
   height: prop(function () {
     return this.shape[1]
+  }),
+
+  depth: prop(function () {
+    return 1
   })
 })
 

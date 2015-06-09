@@ -1,9 +1,13 @@
 var assign = require('object-assign')
 var inherits = require('inherit-class')
 var TextureBase = require('./tex-base')
-var isDOMImage = require('./is-dom-image')
+var isDOMImage = require('is-dom-image')
 var util = require('./tex-util')
 var texImage2D = require('./tex-image-2d')
+var prop = require('dprop')
+
+// user can upload a null 6-sided cube map
+var empties = [ null, null, null, null, null, null ]
 
 module.exports = createTextureCube
 function createTextureCube (gl, elements, shape, opt) {
@@ -26,7 +30,25 @@ function TextureCube (gl, elements, shape, opt) {
 
 inherits(TextureCube, TextureBase)
 
+Object.defineProperties(TextureCube.prototype, {
+
+  depth: prop(function () {
+    return 6
+  })
+})
+
 assign(TextureCube.prototype, {
+
+  _upload: function (elements, shape, offset, level) {
+    this.bind()
+    this._setParameters()
+    
+    elements = elements || empties
+    elements.forEach(function (data, i) {
+      var target = this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i
+      texImage2D(this, target, data, shape, offset, level)
+    }, this)
+  },
 
   update: function update (elements, shape, level) {
     // possible overloads:
@@ -50,15 +72,23 @@ assign(TextureCube.prototype, {
       shape = this.shape
     }
 
-    this.bind()
-    elements.forEach(function (data, i) {
-      var target = this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i
-      texImage2D(this, target, data, shape, null, level)
-    }, this)
+    this._upload(elements, shape, null, level)
+  },
+
+  updateSubImage: function updateSubImage (data, shape, offset, level) {
+    // possible overloads:
+    //   updateSubImage([data], [ 25, 15 ], [ x, y ], mipLevel)
+    //   updateSubImage([images], [ x, y ], mipLevel)
+    if (!Array.isArray(offset)) {
+      
+    }
   }
 })
 
 function textureSize (elements, shape) {
+  if (!elements)
+    return util.getSize(null) // [1, 1]
+
   if (!Array.isArray(elements) || elements.length !== 6) {
     throw new Error('must provide six images or pixel arrays')
   }

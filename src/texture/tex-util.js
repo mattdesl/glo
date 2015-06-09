@@ -13,6 +13,8 @@ function getSize (data) {
     tmp[1] = data.height
     return tmp
   } else {
+    // we default to 1x1 textures to avoid 
+    // erroring out with FBO attachments etc
     tmp[0] = 1
     tmp[1] = 1
     return tmp

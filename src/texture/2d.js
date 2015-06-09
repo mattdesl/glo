@@ -1,7 +1,6 @@
 var inherits = require('inherit-class')
 var assign = require('object-assign')
-var prop = require('dprop')
-var isDOMImage = require('./is-dom-image')
+var isDOMImage = require('is-dom-image')
 var texImage2D = require('./tex-image-2d')
 var TextureBase = require('./tex-base')
 var util = require('./tex-util')
@@ -14,7 +13,11 @@ function createTexture2D (gl, element, shape, opt) {
 var zero = [0, 0]
 
 function Texture2D (gl, element, shape, opt) {
-  // texture(gl, element, [opt])
+  // examples
+  //  createTexture(gl, null, [128, 128])
+  //  createTexture(gl, null, [128, 128], { ... })
+  //  createTexture(gl, image, { ... })
+  //  createTexture(gl, [1, 1, 1, 1], [1, 1], { type: gl.FLOAT })
   if (!Array.isArray(shape)) {
     opt = shape
     shape = null
@@ -44,6 +47,7 @@ assign(Texture2D.prototype, {
 
     if (isDOMImage(data)) {
       level = shape
+      shape = null
     }
 
     shape = shape || util.getSize(data)
@@ -68,6 +72,7 @@ assign(Texture2D.prototype, {
 
     if (isDOMImage(data)) {
       level = offset
+      shape = null
       offset = shape
     }
 
