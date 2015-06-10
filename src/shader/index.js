@@ -9,6 +9,7 @@ var defaultFragment = 'precision mediump float; void main() { gl_FragColor = vec
 
 module.exports = createShader
 function createShader (gl, opt) {
+  opt = opt || {}
   var program = gl.createProgram()
   var vertexShader, fragmentShader
   var types, uniforms, attributes

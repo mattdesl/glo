@@ -4,25 +4,32 @@ var assign = require('object-assign')
 var texImage3D = require('./tex-image-3d')
 var TextureBase = require('./tex-base')
 var util = require('./tex-util')
+var anArray = require('an-array')
 
 module.exports = createTexture3D
-function createTexture3D (gl, data, shape, opt) {
-  return new Texture3D(gl, data, shape, opt)
+function createTexture3D (gl, data, size, opt) {
+  return new Texture3D(gl, data, size, opt)
 }
 
-var zero = [0, 0, 0]
-var one = [1, 1, 1]
-
-function Texture3D (gl, data, shape, opt) {
+function Texture3D (gl, data, size, opt) {
   if (typeof gl.TEXTURE_3D === 'undefined') {
     throw new Error('must provide a WebGL2 context')
-  }  
+  }
+
+  // if options is second param
+  if (data && !anArray(data)) {
+    opt = data
+    data = null
+    size = null
+  }
+
+  // default volume is 1x1x1
+  if (!Array.isArray(size)) {
+    size = [ 1, 1, 1 ]
+  }
 
   TextureBase.call(this, gl, gl.TEXTURE_3D, opt)
-
-  var depth = util.getComponents(this.gl, this.format)
-  this.shape = [0, 0, 0, depth]
-  this.update(data, shape)
+  this.update(data, size)
 }
 
 inherits(Texture3D, TextureBase)
@@ -35,31 +42,16 @@ Object.defineProperties(Texture3D.prototype, {
 
 assign(Texture3D.prototype, {
 
-  _upload: function (target, data, shape, offset, level) {
+  _upload: function _upload (data, size, offset, level) {
     this.bind()
-    this._setParameters()
-    texImage3D(this, target, data, shape, offset, level)
+    this.setPixelStorage()
+    texImage3D(this, this.target, data, size, offset, level)
   },
 
-  update: function update (data, shape, level) {
-    shape = shape || one
-
-    // level zero, update texture shape
-    if (!level) {
-      var channels = util.getComponents(this.gl, this.format)
-      this.shape[0] = shape[0]
-      this.shape[1] = shape[1]
-      this.shape[2] = shape[2]
-      this.shape[3] = channels
-      shape = this.shape
-    }
-
-    this._upload(this.target, data, shape, null, level)
-  },
-
-  updateSubImage: function updateSubImage (data, shape, offset, level) {
-    shape = shape || one
-    offset = offset || zero
-    this._upload(this.target, data, shape, offset, level)
+  _reshape: function _reshape (size) {
+    this.shape[0] = size[0]
+    this.shape[1] = size[1]
+    this.shape[2] = size[2]
+    this.shape[3] = util.getComponents(this.gl, this.format)
   }
 })

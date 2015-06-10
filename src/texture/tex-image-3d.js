@@ -13,7 +13,6 @@ function texImage3D (texture, target, data, shape, offset, level) {
   var depth = shape[2]
   data = normalize(data, type, shape[shape.length-1])
   level = level || 0
-  
   if (offset) {
     if (compressed) {
       gl.compressedTexSubImage3D(target, level,

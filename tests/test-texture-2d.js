@@ -9,7 +9,6 @@ var readTexture = require('gl-texture2d-pixels')
 test('should handle array data', function (t) {
   var gl = createContext()
   var expected = new Uint8Array([0, 5, 84, 255])
-
   var pixels = [ 0, 5, 84 ]
   var shape = [1, 1]
   var tex = createTexture2D(gl, pixels, shape, {
@@ -69,7 +68,7 @@ test('should accept canvas element', function (t) {
   ctx.fillRect(0, 0, 1, 1)
 
   var gl = createContext()
-  var tex = createTexture2D(gl, canvas)
+  var tex = createTexture2D(gl, canvas, [ canvas.width, canvas.height ])
   tex.bind()
   var pixels = readTexture(tex)
   t.deepEqual(pixels, new Uint8Array([ 255, 0, 0, 255 ]))
@@ -78,6 +77,32 @@ test('should accept canvas element', function (t) {
   t.end()
 })
 
+test('should handle constructor', function (t) {
+  var gl = createContext()
+
+  var tex = createTexture2D(gl)
+  t.equal(tex.format, gl.RGBA, 'format')
+  t.equal(tex.compressed, false, 'compressed')
+  t.equal(tex.premultiplyAlpha, false, 'premultiplyAlpha')
+  t.equal(tex.flipY, false, 'flipY')
+  t.equal(tex.type, gl.UNSIGNED_BYTE, 'type')
+  tex.dispose()
+
+  tex = createTexture2D(gl, { format: gl.RGB })
+  t.equal(tex.format, gl.RGB, 'matches format')
+  tex.dispose()
+
+  tex = createTexture2D(gl, null, [2, 3], { format: gl.RGB })
+  t.equal(tex.format, gl.RGB, 'matches format')
+  t.deepEqual(tex.shape, [ 2, 3, 3 ])
+  tex.dispose()
+
+  tex = createTexture2D(gl, null)
+  t.equal(tex.format, gl.RGBA, 'matches format')
+  t.deepEqual(tex.shape, [1, 1, 4], 'matches shape')
+  tex.dispose()
+  t.end()
+})
 
 test('should handle non-POT with grace', function (t) {
   var gl = createContext()
@@ -129,7 +154,7 @@ test('should create texture from image', function (t) {
   loadImage(baboon, function (err, image) {
     if (err) t.fail(err)
 
-    var tex = createTexture2D(gl, image, {
+    var tex = createTexture2D(gl, image, [image.width, image.height], {
       wrap: gl.REPEAT,
       minFilter: gl.LINEAR,
       magFilter: gl.NEAREST,

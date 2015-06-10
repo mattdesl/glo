@@ -28,6 +28,7 @@
     "is-power-of-two": "^1.0.0",
     "negate": "^1.0.0",
     "new-array": "^1.0.0",
+    "no-op": "^1.0.3",
     "object-assign": "^2.0.0",
     "pad-left": "^1.0.2",
     "through2": "^0.6.5"

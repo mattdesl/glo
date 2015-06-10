@@ -19,18 +19,18 @@ test('should create cube texture', function (t) {
   }, 'needs 6 faces')
 
   t.doesNotThrow(function () {
-    createTextureCube(gl, [ image, image, image, image, image, image ])
+    createTextureCube(gl, [ image, image, image, image, image, image ], [ image.width, image.height ])
   }, 'accepts 6 images')
 
   t.doesNotThrow(function () {
-    createTextureCube(gl, [ image, array, image, array, image, image ])
+    createTextureCube(gl, [ image, array, image, array, image, image ], [ image.width, image.height ])
   }, 'accepts mixed image and arrays')
 
   loadImage(baboon, function (err, image2) {
     if (err) t.fail(err)
     var image1 = new Image()
     t.throws(function () {
-      createTextureCube(gl, [ image2, array, image1, array, image2, image ])
+      createTextureCube(gl, [ image2, array, image1, array, image2, image ], [ image.width, image.height ])
     }, 'images must have same dimensions')
   })
 })
@@ -40,6 +40,9 @@ test('should handle texture shape', function (t) {
 
   var cube = createTextureCube(gl)
   t.deepEqual(cube.shape, [ 1, 1, 6, 4 ], 'should create 1x1 cube texture')
+
+  cube = createTextureCube(gl, { format: gl.RGB })
+  t.deepEqual(cube.format, gl.RGB)
 
   var cube2 = createTextureCube(gl, null, [ 128, 128 ])
   t.deepEqual(cube2.shape, [ 128, 128, 6, 4 ], 'should create sized empty cube tex')

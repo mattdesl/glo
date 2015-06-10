@@ -2,6 +2,7 @@ var prop = require('dprop')
 var defined = require('defined')
 var assign = require('object-assign')
 var util = require('./tex-util')
+var noop = require('no-op')
 
 module.exports = Texture
 function Texture (gl, target, opt) {
@@ -16,6 +17,7 @@ function Texture (gl, target, opt) {
   this.premultiplyAlpha = Boolean(opt.premultiplyAlpha)
   this.handle = gl.createTexture()
   this.target = target
+  this.shape = [0, 0, 4]
 
   this._wrap = []
   this._minFilter = null
@@ -97,11 +99,14 @@ Object.defineProperties(Texture.prototype, {
 
 assign(Texture.prototype, {
 
+  _upload: noop,
+  _reshape: noop,
+
   dispose: function dispose () {
     this.gl.deleteTexture(this.handle)
   },
 
-  _setParameters: function () {
+  setPixelStorage: function setPixelStorage () {
     var gl = this.gl
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this.premultiplyAlpha)
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, this.unpackAlignment)
@@ -124,5 +129,30 @@ assign(Texture.prototype, {
         'two texture size', this.width + 'x' + this.height)
     }
     this.gl.generateMipmap(this.target)
+  },
+
+  update: function update (data, shape, level) {
+    if (!Array.isArray(shape)) {
+      throw new Error('must provide shape array to texture')
+    }
+
+    if (!level) {
+      // reshape the texture if level zero / undefined
+      this._reshape(shape)
+      shape = this.shape
+    }
+
+    this._upload(data, shape, null, level)
+  },
+
+  updateSubImage: function updateSubImage (data, shape, offset, level) {
+    if (!Array.isArray(shape)) {
+      throw new Error('must provide shape array to texture')
+    }
+    if (!Array.isArray(offset)) {
+      throw new Error('must provide offset array to texture updateSubImage')
+    }
+
+    this._upload(data, shape, offset, level)
   }
 })
