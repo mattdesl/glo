@@ -2,7 +2,7 @@ var assign = require('object-assign')
 var inherits = require('inherit-class')
 var TextureBase = require('./tex-base')
 var isDOMImage = require('is-dom-image')
-var util = require('./tex-util')
+var getChannels = require('./gl-format-channels')
 var texImage2D = require('./tex-image-2d')
 var prop = require('dprop')
 
@@ -55,7 +55,7 @@ assign(TextureCube.prototype, {
     this.shape[0] = size[0]
     this.shape[1] = size[1]
     this.shape[2] = 6
-    this.shape[3] = util.getComponents(this.gl, this.format)
+    this.shape[3] = getChannels(this.gl, this.format)
   }
 
 })

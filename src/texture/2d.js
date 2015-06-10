@@ -7,7 +7,7 @@ var inherits = require('inherit-class')
 var assign = require('object-assign')
 var texImage2D = require('./tex-image-2d')
 var TextureBase = require('./tex-base')
-var util = require('./tex-util')
+var getChannels = require('./gl-format-channels')
 var anArray = require('an-array')
 var isDOMImage = require('is-dom-image')
 
@@ -45,6 +45,6 @@ assign(Texture2D.prototype, {
   _reshape: function _reshape (size) {
     this.shape[0] = size[0]
     this.shape[1] = size[1]
-    this.shape[2] = util.getComponents(this.gl, this.format)
+    this.shape[2] = getChannels(this.gl, this.format)
   }
 })

@@ -11,24 +11,24 @@ function texImage3D (texture, target, data, shape, offset, level) {
   var width = shape[0]
   var height = shape[1]
   var depth = shape[2]
-  data = normalize(data, type, shape[shape.length-1])
+  data = normalize(data, type, shape[shape.length - 1])
   level = level || 0
   if (offset) {
     if (compressed) {
       gl.compressedTexSubImage3D(target, level,
-          offset[0], offset[1], offset[2], 
-          width, height, depth, format, data)
+        offset[0], offset[1], offset[2],
+        width, height, depth, format, data)
     } else {
-      gl.texSubImage3D(target, level, 
-          offset[0], offset[1], offset[2],
-          width, height, depth, format, type, data)
+      gl.texSubImage3D(target, level,
+        offset[0], offset[1], offset[2],
+        width, height, depth, format, type, data)
     }
   } else {
     if (compressed) {
       gl.compressedTexImage3D(target, level, format,
         width, height, depth, 0, data)
     } else {
-      gl.texImage3D(target, level, format, 
+      gl.texImage3D(target, level, format,
         width, height, depth,
         0, format, type, data)
     }

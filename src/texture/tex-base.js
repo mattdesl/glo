@@ -1,8 +1,8 @@
 var prop = require('dprop')
 var defined = require('defined')
 var assign = require('object-assign')
-var util = require('./tex-util')
 var noop = require('no-op')
+var isPOT = require('is-power-of-two')
 
 module.exports = Texture
 function Texture (gl, target, opt) {
@@ -124,7 +124,7 @@ assign(Texture.prototype, {
 
   generateMipmap: function generateMipmap () {
     this.bind()
-    if (util.isNPOT(this.width) || util.isNPOT(this.height)) {
+    if (isNPOT(this.width) || isNPOT(this.height)) {
       console.warn('Mipmapping not supported for non-power of ' +
         'two texture size', this.width + 'x' + this.height)
     }
@@ -156,3 +156,7 @@ assign(Texture.prototype, {
     this._upload(data, shape, offset, level)
   }
 })
+
+function isNPOT (n) {
+  return (!isPOT(n) || n === 0) && n >= 0
+}
