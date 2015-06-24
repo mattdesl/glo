@@ -1,6 +1,6 @@
 {
   "name": "glo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "experimental WebGL2 framework",
   "main": "index.js",
   "license": "MIT",
