@@ -1,7 +1,7 @@
 {
   "name": "glo",
   "version": "1.0.0",
-  "description": "ecosystem of 3D materials and meshes",
+  "description": "experimental WebGL2 framework",
   "main": "index.js",
   "license": "MIT",
   "private": true,
